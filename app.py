@@ -188,37 +188,3 @@ if st.session_state.get("show_code_canvas", False):
         st.text_area("Code Editor Placeholder", height=600, key="code_canvas_editor")
         # Add other elements for "other tasks" here in the future
 
-# The Vektor DB GUI was moved to the top of the sidebar section earlier in this diff.
-# Ensure this section is not duplicated if merging manually.
-# It was originally here:
-# # --- Vektör DB GUI ve güncelleme butonu ---
-# with st.sidebar:
-#     st.markdown("### Vektör Veritabanı Yönetimi")
-#     if st.button("Vektör Veritabanını Oluştur/Güncelle", use_container_width=True):
-#         success = create_vector_db_from_feedback("feedback.log")
-        if success:
-            st.success("Vektör veritabanı başarıyla oluşturuldu/güncellendi.")
-        else:
-            st.warning("Yeterli beğenilen veri yok veya dosya bulunamadı.")
-    if st.button("Vektör Veritabanı Durumunu Kontrol Et", use_container_width=True):
-        if os.path.exists(VECTOR_DB_PATH):
-            st.info("Vektör veritabanı mevcut.")
-            # Vektör verisini görselleştir
-            import numpy as np
-            import pandas as pd
-            import faiss
-            with open(VECTOR_DB_PATH + ".responses.json", "r", encoding="utf-8") as f:
-                responses = json.load(f)
-            index = faiss.read_index(VECTOR_DB_PATH)
-            if index.ntotal > 0:
-                # Tüm vektörleri oku
-                xb = np.zeros((index.ntotal, index.d), dtype='float32')
-                index.reconstruct_n(0, index.ntotal, xb)
-                df = pd.DataFrame(xb)
-                df['Yanıt'] = responses
-                st.markdown("#### Vektör Özellikleri (İlk 5)")
-                st.dataframe(df.head())
-            else:
-                st.info("Veritabanında vektör yok.")
-        else:
-            st.warning("Vektör veritabanı bulunamadı.")
