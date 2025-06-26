@@ -1,6 +1,8 @@
 import os
 import json
-import faiss
+import faiss  # Ensure you have faiss-cpu installed
+# If you are using GPU, use `import faiss` instead
+# pip install faiss-cpu sentence-transformers
 import numpy as np
 from sentence_transformers import SentenceTransformer
 
