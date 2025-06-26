@@ -1,0 +1,20 @@
+[
+  {
+    "endpoint": "http://localhost:11434",
+    "model": "gemma3:1b-it-qat",
+    "model_settings": {
+      "stream": false,
+      "temperature": 0.7,
+      "max_tokens": 2048
+    }
+  },
+  {
+    "endpoint": "http://192.168.1.14:11434",
+    "model": "gemma3:latest",
+    "model_settings": {
+      "stream": true,
+      "temperature": 0.7,
+      "max_tokens": 8192
+    }
+  }
+]
