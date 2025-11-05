@@ -3,9 +3,16 @@ import json
 import requests
 import logging
 import os
-from vector_db import create_vector_db_from_feedback, search_cache
+from vector_db import (
+    create_vector_db_from_feedback,
+    search_cache,
+    get_vector_dataframe,
+    get_embedding_model,
+)
+from constants import VECTOR_DB_PATH, FEEDBACK_LOG_PATH, DATA_DIR
 
 def chat(user_query, endpoint, model_name, chat_history, system_prompt):
+    """LLM sunucusuna istek gönderir ve yanıtı alır."""
     messages = [{"role": "system", "content": system_prompt}]
     for h in chat_history:
         messages.append({"role": "user", "content": h["user"]})
@@ -24,9 +31,9 @@ def chat(user_query, endpoint, model_name, chat_history, system_prompt):
         answer = data.get("message", data.get("response", "Yanıt alınamadı."))
         if isinstance(answer, dict):
             answer = answer.get("content", str(answer))
-        return answer
+        return answer, None
     except Exception as e:
-        return f"\nOllama API hatası: {str(e)}"
+        return None, f"API Hatası: {str(e)}"
 
 feedback_logger = logging.getLogger('feedback')
 feedback_logger.setLevel(logging.INFO)
@@ -46,9 +53,7 @@ endpoint_list = [str(item["endpoint"]) for item in configs]
 with open("prompt.aitk.txt", "r") as f:
     SYSTEM_PROMPT = f.read()
 
-DATA_DIR = "data"
 os.makedirs(DATA_DIR, exist_ok=True)
-VECTOR_DB_PATH = os.path.join(DATA_DIR, "vector_cache.index")
 
 st.set_page_config(page_title="Basit Sohbet Arayüzü", layout="wide")
 st.markdown("""
@@ -87,33 +92,56 @@ st.markdown("---")
 with st.sidebar:
     st.markdown("### Vektör Veritabanı Yönetimi")
     if st.button("Vektör Veritabanını Oluştur/Güncelle", use_container_width=True):
-        success = create_vector_db_from_feedback("feedback.log")
-        if success:
-            st.success("Vektör veritabanı başarıyla oluşturuldu/güncellendi.")
-        else:
-            st.warning("Yeterli beğenilen veri yok veya dosya bulunamadı.")
-    if st.button("Vektör Veritabanı Durumunu Kontrol Et", use_container_width=True):
-        if os.path.exists(VECTOR_DB_PATH):
-            st.info("Vektör veritabanı mevcut.")
-            # Vektör verisini görselleştir
-            import numpy as np
-            import pandas as pd
-            import faiss
-            with open(VECTOR_DB_PATH + ".responses.json", "r", encoding="utf-8") as f:
-                responses = json.load(f)
-            index = faiss.read_index(VECTOR_DB_PATH)
-            if index.ntotal > 0:
-                # Tüm vektörleri oku
-                xb = np.zeros((index.ntotal, index.d), dtype='float32')
-                index.reconstruct_n(0, index.ntotal, xb)
-                df = pd.DataFrame(xb)
-                df['Yanıt'] = responses
-                st.markdown("#### Vektör Özellikleri (İlk 5)")
-                st.dataframe(df.head())
+        with st.spinner("Vektör veritabanı işleniyor..."):
+            success = create_vector_db_from_feedback()
+            if success:
+                st.success("Vektör veritabanı başarıyla oluşturuldu/güncellendi.")
             else:
-                st.info("Veritabanında vektör yok.")
+                st.warning("Yeterli beğenilen veri yok veya dosya bulunamadı.")
+    if st.button("Vektör Veritabanı Durumunu Kontrol Et", use_container_width=True):
+        df = get_vector_dataframe()
+        if df is not None:
+            st.info(f"Vektör veritabanı mevcut. Toplam {len(df)} kayıt var.")
+            st.markdown("#### Vektör Özellikleri (İlk 5)")
+            st.dataframe(df.head())
         else:
             st.warning("Vektör veritabanı bulunamadı.")
+
+    st.markdown("---")
+
+    if st.session_state.chat_history:
+        chat_history_json = json.dumps(
+            st.session_state.chat_history, indent=2, ensure_ascii=False
+        )
+        st.download_button(
+            label="Sohbet Geçmişini İndir (JSON)",
+            data=chat_history_json,
+            file_name="sohbet_gecmisi.json",
+            mime="application/json",
+            use_container_width=True,
+        )
+
+    uploaded_file = st.file_uploader(
+        "Sohbet Geçmişini Yükle (JSON)",
+        type=["json"],
+        help="Kaydedilmiş bir sohbet geçmişi dosyasını yükleyerek oturumu geri getirin.",
+    )
+    if uploaded_file is not None:
+        try:
+            new_chat_history = json.load(uploaded_file)
+            # Basit doğrulama: Yüklenen verinin beklenen formatta olup olmadığını kontrol et
+            if isinstance(new_chat_history, list) and all(
+                "user" in item and "assistant" in item for item in new_chat_history
+            ):
+                st.session_state.chat_history = new_chat_history
+                st.success("Sohbet geçmişi başarıyla yüklendi!")
+                st.rerun()  # Arayüzü hemen güncellemek için
+            else:
+                st.error("Hata: JSON dosyası beklenen formatta değil.")
+        except json.JSONDecodeError:
+            st.error(
+                "Hata: Geçersiz JSON dosyası. Lütfen dosyanın içeriğini kontrol edin."
+            )
 
     st.markdown("---")
     st.checkbox("Show Code Canvas", key="show_code_canvas", value=False)
@@ -135,23 +163,51 @@ with main_chat_col:
             st.markdown(
                 f"<div class='sohbet-kutu'><span class='asistan'><b>Asistan:</b> {h['assistant']}</span></div>",
                 unsafe_allow_html=True)
-            icon_cols = st.columns([1,1,1,10])
-            with icon_cols[0]:
-                like_clicked = st.button("👍", key=f"like_{i}", help="Beğen")
-            with icon_cols[1]:
-                dislike_clicked = st.button("👎", key=f"dislike_{i}", help="Beğenme")
-            with icon_cols[2]:
-                copy_clicked = st.button("📋", key=f"copy_{i}", help="Kopyala")
-            if like_clicked:
-                feedback_logger.info(f"PromptForLikedResponse: {h['user']}")
-                feedback_logger.info(f"Feedback: like | Message: {h['assistant']}")
-                st.success("Beğeni kaydedildi.")
-            if dislike_clicked:
-                feedback_logger.info(f"Feedback: dislike | Message: {h['assistant']}")
-                st.info("Beğenmeme kaydedildi.")
-            if copy_clicked:
-                st.session_state.user_input = h['assistant']
-                st.success("Yanıt panoya kopyalandı (manuel olarak kopyalayabilirsiniz).")
+
+            if h.get("from_cache"):
+                st.info("Bu yanıt önbellekten getirildi.")
+                st.write("Bu yanıt yardımcı oldu mu?")
+                feedback_cols = st.columns([1, 1, 1, 10])
+                with feedback_cols[0]:
+                    yes_clicked = st.button("Evet", key=f"yes_{i}")
+                with feedback_cols[1]:
+                    no_clicked = st.button("Hayır", key=f"no_{i}")
+                if yes_clicked:
+                    feedback_logger.info(
+                        f"CacheFeedback: helpful | Query: {h['user']} | Response: {h['assistant']}"
+                    )
+                    st.success("Geri bildiriminiz için teşekkürler!")
+                if no_clicked:
+                    feedback_logger.info(
+                        f"CacheFeedback: not_helpful | Query: {h['user']} | Response: {h['assistant']}"
+                    )
+                    st.warning(
+                        "Geri bildiriminiz için teşekkürler! Bu yanıtı iyileştirmeye çalışacağız."
+                    )
+            else:
+                icon_cols = st.columns([1, 1, 1, 10])
+                with icon_cols[0]:
+                    like_clicked = st.button("👍", key=f"like_{i}", help="Beğen")
+                with icon_cols[1]:
+                    dislike_clicked = st.button(
+                        "👎", key=f"dislike_{i}", help="Beğenme"
+                    )
+                with icon_cols[2]:
+                    copy_clicked = st.button("📋", key=f"copy_{i}", help="Kopyala")
+                if like_clicked:
+                    feedback_logger.info(f"PromptForLikedResponse: {h['user']}")
+                    feedback_logger.info(f"Feedback: like | Message: {h['assistant']}")
+                    st.success("Beğeni kaydedildi.")
+                if dislike_clicked:
+                    feedback_logger.info(
+                        f"Feedback: dislike | Message: {h['assistant']}"
+                    )
+                    st.info("Beğenmeme kaydedildi.")
+                if copy_clicked:
+                    st.session_state.user_input = h["assistant"]
+                    st.success(
+                        "Yanıt panoya kopyalandı (manuel olarak kopyalayabilirsiniz)."
+                    )
 
     st.markdown("---")
     st.markdown("<div style='font-size:0.95em;'><b>Mesajınızı yazın:</b> <span style='color:gray;'>(Göndermek için: <b>Ctrl+Enter</b> veya <b>Cmd+Enter</b>)</span></div>", unsafe_allow_html=True)
@@ -167,14 +223,32 @@ with main_chat_col:
 
     send_shortcut = st.session_state.pop("send_shortcut", False) if "send_shortcut" in st.session_state else False
     if (send or send_shortcut) and st.session_state.user_input.strip():
-        cached_response = search_cache(st.session_state.user_input)
+        user_query = st.session_state.user_input
+        cached_response = search_cache(user_query)
         if cached_response:
             answer = cached_response
-            st.info("Cevap önbellekten getirildi.")
+            st.session_state.chat_history.append(
+                {
+                    "user": user_query,
+                    "assistant": answer,
+                    "from_cache": True,
+                }
+            )
         else:
             with st.spinner("Yanıt hazırlanıyor..."):
-                answer = chat(st.session_state.user_input, model_endpoint, model_name, st.session_state.chat_history, SYSTEM_PROMPT)
-        st.session_state.chat_history.append({"user": st.session_state.user_input, "assistant": answer})
+                answer, error = chat(
+                    user_query,
+                    model_endpoint,
+                    model_name,
+                    st.session_state.chat_history,
+                    SYSTEM_PROMPT,
+                )
+            if error:
+                st.error(error)
+            else:
+                st.session_state.chat_history.append(
+                    {"user": user_query, "assistant": answer}
+                )
         st.session_state.clear_input = True
         st.rerun()
 
@@ -187,4 +261,3 @@ if st.session_state.get("show_code_canvas", False):
         st.markdown("### Code Canvas")
         st.text_area("Code Editor Placeholder", height=600, key="code_canvas_editor")
         # Add other elements for "other tasks" here in the future
-

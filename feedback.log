@@ -125,3 +125,84 @@ if __name__ == '__main__':
 * **Simulated Cache:** The `search_cache` function provides a placeholder for your real caching implementation. Adapt it to your needs.
 
 This revised version provides a cleaner, more organized, and more illustrative example of caching in a chatbot application.  Remember to replace the simulated cache logic with your actual caching solution.
+2025-10-19 22:35:37,823 - PromptForLikedResponse: Londra hangi ülkenin başkenti.
+
+2025-10-19 22:35:37,824 - Feedback: like | Message: Londra, İngiltere’nin başkenti.
+2025-10-19 22:36:18,757 - Feedback: dislike | Message: Paris! (Paris!)
+2025-10-19 22:39:13,489 - Feedback: dislike | Message: Paris ve Londra arasında Avrupa’nın en büyük denizi, Seine Nehri’dir.
+2025-10-19 22:41:38,459 - Feedback: dislike | Message: Manş Denizi, Avrupa’nın en uzun ve en derinlerinden biri olan **Atlantik Okyanusu’nda** yer almaktadır.
+2025-10-19 22:46:15,146 - PromptForLikedResponse: Lizbon'da liman yok mu ?
+2025-10-19 22:46:15,146 - Feedback: like | Message: Orijinal olarak Lizbon'da doğrudan liman bulunmamaktadır. Ancak, Portekiz'in deniz yoluyla bağlanabileceği birçok liman bulunmaktadır. En yakın limanlardan bazıları şunlardır:
+
+*   **Sintra:** Bu, Lizbon’a en yakın ve en popüler limandır.
+*   **Cascais:**  Birkaç deniz yolu bağlantısı vardır.
+*   **Porto:** Daha uzun bir yolculuk gerektirebilir, ancak yine de mümkün olacaktır.
+
+Bu limanlar, sizin için daha uygun bir seçenek olabilir.  Lütfen ne tür bir liman aradığınızı belirterek daha fazla bilgi verebilirim.
+2025-10-24 17:58:24,937 - Feedback: dislike | Message: Here's the solution to the problem:
+
+The function calculates the square root of a complex number.  The complex number is:
+
+`z = 0.5871389397576026 + 0.44984810054302216i`
+
+Therefore, the square root is:
+
+`√z = √(0.5871389397576026 + 0.44984810054302216i) ≈ 0.7662338413648323  + 0.44984810054302216i`
+
+So the answer is approximately 0.7662338413648323  + 0.44984810054302216i.  This is the square root of the complex number.
+2025-10-24 18:04:51,106 - PromptForLikedResponse: Merhaba
+
+2025-10-24 18:04:51,107 - Feedback: like | Message: Merhaba! How can I help you today?
+2025-10-24 18:06:14,984 - PromptForLikedResponse: Fransanın baş kenti paris bunu biliyoruz fransa hakkında kimsenin bilmediği birşey
+2025-10-24 18:06:14,984 - Feedback: like | Message: That’s a really interesting and somewhat surprising claim! It's true that Paris hasn't been widely known as the capital of France.  
+
+It’s a fascinating fact! It’s often considered a relatively recent idea, and it’s quite remarkable that it hasn’t been widely recognized.
+
+Do you want to talk more about this, or would you like to explore something else?
+2025-10-24 18:07:53,255 - PromptForLikedResponse: Fransanın baş kenti paris bunu biliyoruz fransa hakkında kimsenin bilmediği bir şey
+Tamam fransanın başkenti neresi ?
+2025-10-24 18:07:53,255 - Feedback: like | Message: The capital of France is **Paris**. 😊
+2025-10-24 18:07:54,529 - PromptForLikedResponse: Fransanın baş kenti paris bunu biliyoruz fransa hakkında kimsenin bilmediği birşey
+2025-10-24 18:07:54,531 - Feedback: like | Message: That’s a really interesting and somewhat surprising claim! It's true that Paris hasn't been widely known as the capital of France.  
+
+It’s a fascinating fact! It’s often considered a relatively recent idea, and it’s quite remarkable that it hasn’t been widely recognized.
+
+Do you want to talk more about this, or would you like to explore something else?
+2025-10-24 18:21:03,114 - PromptForLikedResponse: Fransanın baş kenti paris bunu biliyoruz fransa hakkında kimsenin bilmediği bir şey
+Tamam fransanın başkenti neresi ?
+2025-10-24 18:21:03,115 - Feedback: like | Message: The capital of France is **Paris**. 😊
+2025-10-24 18:44:10,921 - PromptForLikedResponse: Türkiyenin başkenti ?
+2025-10-24 18:44:10,922 - Feedback: like | Message: Türkiye’nin başkenti Ankara’dır.
+2025-11-01 18:09:33,849 - CacheFeedback: helpful | Query: merhaba;
+ | Response: like | Message: Merhaba! Nasılsınız? (Hello! How are you?)
+2025-11-01 18:12:40,648 - PromptForLikedResponse: İstanbul Başkent olsun mu ?
+2025-11-01 18:12:40,649 - Feedback: like | Message: It's a bit of a tricky question! Istanbul wasn't officially the capital of the Ottoman Empire. It was the capital for a very long time, but it was shifted several times.
+
+The most recent and currently official capital of Turkey is Ankara.
+
+However, Istanbul has a long and rich history as a major city, and it was the capital for centuries!  It’s a very significant and culturally important city, with a unique blend of Eastern and Western influences.
+
+So, while it wasn't officially the capital, Istanbul remains a very important city and a significant historical center.
+2025-11-01 18:16:00,859 - CacheFeedback: helpful | Query: İstanbul Başkent olsun mu ? | Response: like | Message: It's a bit of a tricky question! Istanbul wasn't officially the capital of the Ottoman Empire. It was the capital for a very long time, but it was shifted several times.
+2025-11-01 18:17:47,247 - PromptForLikedResponse: Olsun demek için kaç kişi gerekli ?
+2025-11-01 18:17:47,248 - Feedback: like | Message: To determine the number of people needed to make something "happen" (like officially establishing Istanbul as the capital), it depends entirely on what "happen" means. Let's break down the possibilities:
+
+**1. If you mean: "Is it *possible* for Istanbul to become the capital?"**
+
+*   **Minimum:** 1 person – a single individual who wants it to happen.
+*   **Realistic:** Thousands – to influence public opinion, drive political movements, and pressure decision-makers.
+*   **Highly Likely:** Millions – a sustained, nationwide movement would be necessary.
+
+**2. If you mean: "How many people are needed to *officially* change the capital to Istanbul?"**
+
+*   **Absolute Minimum:** 1 – The President of Turkey, who has the authority to issue a decree.
+*   **Realistic:** Hundreds of thousands –  a massive public demonstration, widespread support from political parties, and a coordinated effort from government ministries.
+*   **Highly Likely:** Millions – A truly fundamental change like this would require overwhelming popular support and the ability to reshape the entire political and legal system.
+
+**3.  If you mean "What’s the minimum number of people to make it a *viable* capital?"**
+
+*   **Absolute Minimum:** A small, functional government with essential services (police, courts, administration). This would likely be in the hundreds.
+*   **Realistic:** Tens of thousands – to operate effectively and maintain order.
+*   **Highly Likely:** Hundreds of thousands – to build a thriving capital city with infrastructure, businesses, and a diverse population.
+
+To give you a more precise answer, could you clarify what you’re asking when you say “Olsun?”

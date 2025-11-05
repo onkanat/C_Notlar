@@ -1,54 +1,62 @@
-# Todo List
+markdown# Basit Sohbet Arayüzü
 
-Bu chat programı, yerel ağdaki AI sunucuları (Ollama ve LM Studio) ile iletişim kurarak kullanıcıların metin tabanlı etkileşimlerini sağlar. Programın performansını ve kullanıcı deneyimini artırmak için aşağıdaki optimizasyon önerilerini düşünebilirsiniz:
+Bu Streamlit uygulaması, Ollama veya LM Studio gibi yerel yapay zeka sunucularıyla etkileşim kurmak için basit bir sohbet arayüzü sağlar. Uygulama, sık sorulan sorular için bir önbellekleme mekanizması ve oturumları yönetmek için sohbet geçmişini içe/dışa aktarma gibi özellikler içerir.
 
-1. **Ağ İletişimini Optimize Etme**
+## Özellikler
 
-   - **Asenkron İstekler:** `requests` kütüphanesi yerine `aiohttp` gibi asenkron bir kütüphane kullanarak API isteklerini asenkron hale getirebilirsiniz. Bu, UI'nin donmasını engeller ve kullanıcı deneyimini artırır.
-   - **İstek Zaman Aşımı:** API isteklerine zaman aşımı ekleyerek, sunucu yanıt vermediğinde kullanıcıyı bilgilendirebilir ve programın sonsuza kadar beklemesini engelleyebilirsiniz.
-   - **Connection Pooling:** Aynı sunucuya yapılan birden fazla istekte bağlantı havuzu kullanarak performansı artırabilirsiniz.
+- **Dinamik Model ve Sunucu Seçimi**: Arayüz üzerinden farklı yapay zeka modelleri ve sunucu endpoint'leri arasında geçiş yapma imkanı.
+- **Vektör Veritabanı ile Akıllı Önbellekleme**:
+    - Kullanıcılar tarafından "beğenilen" yanıtlar, bir vektör veritabanında saklanır.
+    - Yeni bir soru sorulduğunda, bu veritabanında anlamsal olarak benzer bir soru aranır.
+    - Yüksek benzerlikte bir eşleşme bulunursa, yanıt doğrudan önbellekten sunularak API maliyetlerinden ve zamandan tasarruf edilir.
+- **Geri Bildirim Mekanizması**:
+    - Modelden gelen yanıtlara "Beğen" (👍) veya "Beğenme" (👎) ile geri bildirim verilebilir.
+    - Önbellekten gelen yanıtların yardımcı olup olmadığı "Evet" veya "Hayır" ile belirtilebilir.
+    - Tüm geri bildirimler `feedback.log` dosyasına kaydedilir ve "beğenilen" yanıtlar vektör veritabanını eğitmek için kullanılır.
+- **Sohbet Geçmişi Yönetimi**:
+    - **Dışa Aktarma**: Mevcut sohbet geçmişi, kenar çubuğundaki "Sohbet Geçmişini İndir (JSON)" butonu ile bir JSON dosyası olarak indirilebilir.
+    - **İçe Aktarma**: Daha önce kaydedilmiş bir sohbet oturumu, "Sohbet Geçmişini Yükle (JSON)" özelliği kullanılarak geri yüklenebilir. Bu sayede kullanıcılar sohbetlerine kaldıkları yerden devam edebilirler.
 
-2. **UI/UX İyileştirmeleri**
+## Kurulum ve Çalıştırma
 
-   - **Yükleme İndikatörü:** API isteği gönderildiğinde bir yükleme indikatörü (örneğin, bir spinner) ekleyerek kullanıcıya işlemin devam ettiğini gösterebilirsiniz.
-   - **Otomatik Tamamlama:** Model ve sunucu seçiminde otomatik tamamlama özelliği ekleyerek kullanıcıların daha hızlı seçim yapmasını sağlayabilirsiniz.
-   - **Hata Mesajları:** API isteklerinde oluşan hataları daha anlaşılır bir şekilde kullanıcıya bildirin. Örneğin, sunucuya bağlanılamadığında veya model bulunamadığında daha açıklayıcı mesajlar gösterin.
+1.  Gerekli Python kütüphanelerini yükleyin:
+    ```bash
+    pip install -r requirements.txt
+    ```
+2.  `configs.json` dosyasını kendi yerel sunucu yapılandırmanıza göre düzenleyin.
+3.  Uygulamayı çalıştırın:
+    ```bash
+    streamlit run app.py
+    ```
 
-3. **Kod Yapısını İyileştirme**
+---
 
-   - **Tekrar Eden Kodları Azaltma:** `generate_completion` ve `lms_text_completion` gibi benzer işlevleri tek bir fonksiyon altında birleştirerek kod tekrarını azaltabilirsiniz. Bu, bakımı kolaylaştırır ve hata olasılığını düşürür.
-   - **Config Yönetimi:** Config dosyasını yönetmek için daha modüler bir yapı kullanabilirsiniz. Örneğin, `configparser` veya `pydantic` gibi kütüphanelerle config dosyalarını daha etkili bir şekilde yönetebilirsiniz.
-   - **Loglama:** Hata ayıklama ve izleme için loglama mekanizması ekleyin. `logging` kütüphanesi ile hataları ve önemli olayları kaydedebilirsiniz.
+## Geliştirme ve Optimizasyon Fikirleri (Todo List)
 
-4. **Performans İyileştirmeleri**
+Bu liste, projenin gelecekteki gelişim yönünü ve potansiyel iyileştirmeleri özetlemektedir.
 
-   - **Model Listesini Önbelleğe Alma:** Model listesini her seferinde sunucudan çekmek yerine, belirli bir süre boyunca önbelleğe alarak performansı artırabilirsiniz.
-   - **Token ve Süre Hesaplamalarını Optimize Etme:** Token sayısı ve süre hesaplamalarını daha verimli hale getirebilirsiniz. Örneğin, bu bilgileri sadece kullanıcıya göstermek için değil, aynı zamanda performans analizi için de kullanabilirsiniz.
-   - **Gereksiz İstekleri Azaltma:** Kullanıcı arayüzünde yapılan her değişiklikte sunucuya istek göndermek yerine, sadece gerekli durumlarda istek gönderin.
+### 1. Akıllı Önbellek Yönetimi
+- **Otomatik Silme**: Önbellekten gelen ve kullanıcı tarafından "Hayır" (yardımcı olmadı) olarak oylanan yanıtları vektör veritabanından otomatik olarak silen bir mekanizma.
+- **İstatistikler**: Önbellek isabet oranını (cache hit rate) izleme ve bu istatistiği arayüzde gösterme.
+- **Yaşam Süresi (TTL)**: Önbellek girişlerine bir "yaşam süresi" (Time To Live) ekleyerek eski kayıtların belirli bir süre sonra otomatik olarak güncellenmesini sağlama.
 
-5. **Güvenlik İyileştirmeleri**
+### 2. Arayüz ve Kullanıcı Deneyimi (UI/UX)
+- **Tema Seçimi**: Kullanıcının açık ve koyu mod arasında geçiş yapabilmesi için bir tema seçeneği ekleme.
+- **Sohbette Arama**: Sohbet geçmişi içinde metin tabanlı arama yapma özelliği.
+- **Gelişmiş Kod Görünümü**: Yanıtlar içindeki kod blokları için otomatik olarak sözdizimi vurgulama (syntax highlighting) ve bloğa özel kopyalama butonu ekleme.
+- **Otomatik Tamamlama**: Model ve sunucu seçimi gibi alanlarda otomatik tamamlama özelliği.
 
-   - **HTTPS Kullanımı:** Eğer sunucu ile iletişimde hassas veriler gönderiliyorsa, HTTP yerine HTTPS kullanarak iletişimi şifreleyebilirsiniz.
-   - **API Anahtarı Yönetimi:** Eğer API anahtarı kullanılıyorsa, bu anahtarı güvenli bir şekilde saklayın ve kod içinde açıkça yazmaktan kaçının.
+### 3. Yapılandırma ve Esneklik
+- **Arayüzden Yönetim**: `configs.json` ve `prompt.aitk.txt` dosyalarının içeriğini doğrudan Streamlit arayüzü üzerinden düzenleme imkanı.
+- **Çoklu Prompt Desteği**: Farklı sistem prompt'ları arasında kolayca geçiş yapabilme.
 
-6. **Test ve Hata Ayıklama**
+### 4. Performans ve Ağ
+- **Asenkron İstekler**: `requests` yerine `aiohttp` gibi bir kütüphane kullanarak API isteklerini asenkron hale getirme.
+- **Model Listesini Önbelleğe Alma**: Sunuculardan alınan model listesini belirli bir süre önbelleğe alarak gereksiz API çağrılarını azaltma.
 
-   - **Unit Testler:** Fonksiyonlar için unit testler yazarak kodun doğru çalıştığından emin olabilirsiniz. `unittest` veya `pytest` gibi kütüphaneleri kullanabilirsiniz.
-   - **Entegrasyon Testleri:** API ile iletişimi test etmek için entegrasyon testleri yazabilirsiniz. Bu, sunucu değişikliklerinden etkilenip etkilenmediğinizi kontrol etmenizi sağlar.
+### 5. Test ve Güvenilirlik
+- **Birim Testleri (Unit Tests)**: `pytest` kullanarak `chat`, `search_cache` gibi kritik fonksiyonlar için test senaryoları yazma.
+- **Entegrasyon Testleri**: API ile iletişimi ve veritabanı işlemlerini bütünsel olarak test etme.
 
-7. **Dokümantasyon ve Kullanım Kolaylığı**
-
-   - **Kullanım Kılavuzu:** Programın nasıl kullanılacağına dair bir kullanım kılavuzu veya dokümantasyon ekleyerek kullanıcıların daha kolay adapte olmasını sağlayabilirsiniz.
-   - **Komut Satırı Arayüzü (CLI):** Programı komut satırından da çalıştırılabilir hale getirerek, farklı kullanım senaryolarına uyum sağlayabilirsiniz.
-
-8. **Dil ve Format Desteği**
-
-   - **Çoklu Dil Desteği:** Kullanıcı arayüzünü birden fazla dilde sunarak daha geniş bir kitleye hitap edebilirsiniz.
-   - **Format Desteğini Genişletme:** Markdown, LaTeX ve MathJax dışında daha fazla format desteği ekleyebilirsiniz. Örneğin, HTML veya JSON formatlarını da destekleyebilirsiniz.
-
-9. **Ölçeklenebilirlik**
-
-   - **Birden Fazla Sunucu Desteği:** Programı birden fazla sunucuya bağlanabilir hale getirerek ölçeklenebilirliği artırabilirsiniz. Örneğin, farklı sunucular arasında geçiş yapabilme özelliği ekleyebilirsiniz.
-   - **Yük Dengeleme:** Eğer birden fazla sunucu kullanıyorsanız, yük dengeleme mekanizmaları ekleyerek sunucular arasında yükü eşit dağıtabilirsiniz.
-
-Bu optimizasyon önerileri, programın performansını, kullanıcı deneyimini ve bakım kolaylığını artıracaktır. Her bir öneriyi projenizin ihtiyaçlarına göre uyarlayabilirsiniz.
+### 6. Dağıtım ve Bakım
+- **Konteynerleştirme**: Uygulamayı ve bağımlılıklarını bir `Dockerfile` ile paketleyerek dağıtımı ve çalıştırmayı kolaylaştırma.

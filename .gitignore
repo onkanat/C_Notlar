@@ -1,2 +1,32 @@
-data/vector_cache.index.responses.json
+
+# Ortak Python ignore kuralları
+__pycache__/
+*.py[cod]
+*.so
+*.egg
+*.egg-info/
+*.pyo
+*.pyd
+*.db
+*.sqlite3
+*.log
+*.env
+*.venv
+venv/
+ENV/
+env/
+.c_notlar/
+# Kendi cache ve veri dosyaları
 data/vector_cache.index
+data/vector_cache.index.responses.json
+# VSCode ve MacOS dosyaları
+.vscode/
+.DS_Store
+# Gereksiz dosyalar
+*.bak
+*.tmp
+# Git ile ilgili dosyalar
+.git/
+.gitignore
+.gitattributes
+/__pycache__

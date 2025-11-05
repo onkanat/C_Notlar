@@ -3,7 +3,7 @@
     "endpoint": "http://localhost:11434",
     "model": "gemma3:1b-it-qat",
     "model_settings": {
-      "stream": false,
+      "stream": true,
       "temperature": 0.7,
       "max_tokens": 2048
     }
